@@ -401,6 +401,7 @@
       <p class="breath-cue" id="breath-cue">準備ができたら</p>
     </div>
     <button class="btn" id="breath-start">はじめる</button>
+    <button class="btn ghost" id="breath-skip" style="display:none;">つぎへ</button>
   </div>
 
   <!-- 呼吸 後 -->
@@ -675,9 +676,13 @@
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function wait(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 
+  let breathSkipped = false;
   document.getElementById('breath-start').addEventListener('click', async function(btn){
     const startBtn = document.getElementById('breath-start');
+    const skipBtn = document.getElementById('breath-skip');
+    breathSkipped = false;
     startBtn.style.display = 'none';
+    skipBtn.style.display = '';
     const circle = document.getElementById('breath-circle');
     const cue = document.getElementById('breath-cue');
     // 吸う4秒・とめる2秒・吐く6秒を3回。数字は数えず、円の動きと言葉だけで誘導する。
@@ -689,15 +694,29 @@
       }
       await wait(seconds * 1000);
     }
-    for(let i=0;i<3;i++){
+    for(let i=0;i<3 && !breathSkipped;i++){
       await phase('吸って', 4, 1.18);
+      if(breathSkipped) break;
       await phase('とめて', 2, 1.18);
+      if(breathSkipped) break;
       await phase('吐いて', 6, 1);
     }
+    skipBtn.style.display = 'none';
+    if(breathSkipped) return;
     cue.textContent = 'ととのいました 🤍';
     await wait(1400);
+    if(breathSkipped) return;
     goTo('after-check');
     startBtn.style.display = '';
+  });
+
+  document.getElementById('breath-skip').addEventListener('click', function(){
+    breathSkipped = true;
+    document.getElementById('breath-skip').style.display = 'none';
+    document.getElementById('breath-start').style.display = '';
+    document.getElementById('breath-cue').textContent = '準備ができたら';
+    document.getElementById('breath-circle').style.transform = 'scale(1)';
+    goTo('after-check');
   });
 
   // ---- 出口カード ----
