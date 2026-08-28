@@ -368,9 +368,10 @@
     <h2>今から、3回だけ、
 ゆっくり呼吸して
 みてください。</h2>
+    <p class="dim">吸う4秒・とめる2秒・吐く6秒 を 3回</p>
     <div class="breath-wrap">
       <div class="breath-circle" id="breath-circle"></div>
-      <p class="breath-cue" id="breath-cue">はじめる準備ができたら</p>
+      <p class="breath-cue" id="breath-cue">準備ができたら</p>
     </div>
     <button class="btn" id="breath-start">はじめる</button>
   </div>
@@ -636,24 +637,22 @@ AIを使ってつくっています。
     startBtn.style.display = 'none';
     const circle = document.getElementById('breath-circle');
     const cue = document.getElementById('breath-cue');
-    // 4-7-8呼吸法（吸う4秒・止める7秒・吐く8秒）。吐く息を一番長く。
+    // 吸う4秒・とめる2秒・吐く6秒を3回。数字は数えず、円の動きと言葉だけで誘導する。
     async function phase(label, seconds, scaleTo){
-      if(!reduceMotion && scaleTo !== null){
+      cue.textContent = label;
+      if(!reduceMotion){
         circle.style.transition = 'transform ' + seconds + 's ease-in-out';
         circle.style.transform = 'scale(' + scaleTo + ')';
       }
-      for(let s=seconds; s>=1; s--){
-        cue.textContent = label + s;
-        await wait(1000);
-      }
+      await wait(seconds * 1000);
     }
     for(let i=0;i<3;i++){
-      await phase('吸って… ', 4, 1.35);
-      await phase('止めて… ', 7, null);
-      await phase('吐いて… ', 8, 1);
+      await phase('吸って', 4, 1.18);
+      await phase('とめて', 2, 1.18);
+      await phase('吐いて', 6, 1);
     }
-    cue.textContent = 'よくできました';
-    await wait(900);
+    cue.textContent = 'ととのいました 🤍';
+    await wait(1400);
     goTo('after-check');
     startBtn.style.display = '';
   });
