@@ -1,0 +1,739 @@
+<title>コンディション名刺</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ============================================================
+     このアプリは、あえて「一つの世界観」に寄せた単一テーマ設計。
+     金の光×深い夜色で、静かで特別な体験にしています。
+     ============================================================ */
+  :root{
+    --ink:        #14121c;
+    --surface:    #1e1b28;
+    --surface-2:  #2a2536;
+    --line:       rgba(243,205,133,0.16);
+    --gold:       #cda05a;
+    --gold-glow:  #f3cd85;
+    --rose:       #cf8f93;
+    --ivory:      #f6efe3;
+    --muted:      #a79fb0;
+    --font-display: 'Shippori Mincho', serif;
+    --font-body:    'Zen Kaku Gothic New', sans-serif;
+    --font-round:   'Zen Maru Gothic', sans-serif;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--ink);
+    color:var(--ivory);
+    font-family:var(--font-body);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  #particles{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+  }
+
+  .app{
+    position:relative; z-index:1;
+    max-width:480px; margin:0 auto;
+    min-height:100vh;
+    display:flex; flex-direction:column;
+  }
+
+  .screen{
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:9vh 7vw 8vh;
+    text-align:center;
+    gap:1.6rem;
+  }
+  .screen.active{ display:flex; animation:fadeUp .55s ease both; }
+  @media (prefers-reduced-motion:reduce){ .screen.active{ animation:none; } }
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+
+  .eyebrow{
+    font-family:var(--font-round);
+    font-size:0.72rem;
+    letter-spacing:.18em;
+    color:var(--gold);
+    text-transform:uppercase;
+  }
+
+  h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(1.6rem,7vw,2.15rem);
+    line-height:1.55;
+    margin:0;
+    text-wrap:balance;
+  }
+  h2{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(1.3rem,6vw,1.7rem);
+    line-height:1.6;
+    margin:0;
+    text-wrap:balance;
+  }
+  p{
+    font-size:clamp(0.95rem,4vw,1.03rem);
+    line-height:2;
+    color:var(--ivory);
+    margin:0;
+    white-space:pre-line;
+  }
+  .dim{ color:var(--muted); font-size:0.9rem; line-height:1.9; white-space:pre-line; }
+
+  .glow-dot{
+    width:14px; height:14px; border-radius:50%;
+    background:radial-gradient(circle, var(--gold-glow), var(--gold) 60%, transparent 75%);
+    box-shadow:0 0 22px 6px rgba(243,205,133,0.45);
+    margin-bottom:.4rem;
+  }
+
+  button.btn{
+    font-family:var(--font-round);
+    font-weight:700;
+    font-size:1rem;
+    letter-spacing:.03em;
+    color:var(--ink);
+    background:linear-gradient(135deg, var(--gold-glow), var(--gold));
+    border:none;
+    border-radius:999px;
+    padding:1rem 2.4rem;
+    cursor:pointer;
+    box-shadow:0 8px 24px rgba(205,160,90,0.28);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  button.btn:active{ transform:scale(0.96); box-shadow:0 4px 14px rgba(205,160,90,0.24); }
+  button.btn.ghost{
+    background:transparent;
+    color:var(--gold-glow);
+    border:1px solid var(--line);
+    box-shadow:none;
+  }
+
+  .chip-row{ display:flex; flex-direction:column; gap:.8rem; width:100%; }
+  .chip{
+    font-family:var(--font-round);
+    font-size:1rem;
+    font-weight:500;
+    color:var(--ivory);
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:1.05rem 1.2rem;
+    cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .chip:active{ transform:scale(0.97); }
+  .chip:hover{ border-color:var(--gold); }
+  .chip.selected{ background:var(--surface); border-color:var(--gold); color:var(--gold-glow); }
+
+  .progress{ display:flex; gap:.4rem; position:fixed; top:calc(env(safe-area-inset-top,0) + 18px); left:0; right:0; justify-content:center; z-index:2; }
+  .progress span{ width:7px; height:7px; border-radius:50%; background:rgba(246,239,227,0.18); transition:background .3s ease, transform .3s ease; }
+  .progress span.done{ background:var(--gold); transform:scale(1.15); }
+
+  .back-btn{
+    position:fixed;
+    top:calc(env(safe-area-inset-top,0) + 14px);
+    left:14px;
+    z-index:3;
+    display:none;
+    font-family:var(--font-round);
+    font-size:0.85rem;
+    color:var(--muted);
+    background:rgba(30,27,40,0.7);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:.45rem .9rem;
+    cursor:pointer;
+  }
+  .back-btn:active{ transform:scale(0.95); }
+  .back-btn.show{ display:inline-block; }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:1.8rem 1.5rem;
+    width:100%;
+  }
+
+  .type-title{
+    font-family:var(--font-display);
+    color:var(--gold-glow);
+    font-size:clamp(1.35rem,6vw,1.6rem);
+    margin:0 0 .8rem;
+  }
+
+  .breath-wrap{ display:flex; flex-direction:column; align-items:center; gap:2.4rem; }
+  .breath-circle{
+    width:min(46vw,190px); height:min(46vw,190px);
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--gold-glow), var(--gold) 55%, rgba(205,160,90,0.15) 78%);
+    box-shadow:0 0 50px 10px rgba(243,205,133,0.25);
+    transform:scale(1);
+    will-change:transform;
+  }
+  .breath-cue{
+    font-family:var(--font-display);
+    font-size:1.3rem;
+    color:var(--gold-glow);
+    min-height:1.8em;
+  }
+
+  .exit-card{
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:1.5rem;
+    text-align:left;
+    cursor:pointer;
+    transition:border-color .15s ease, transform .12s ease;
+    width:100%;
+  }
+  .exit-card:active{ transform:scale(0.98); }
+  .exit-card:hover{ border-color:var(--gold); }
+  .exit-card b{ font-family:var(--font-display); font-size:1.08rem; color:var(--ivory); display:block; margin-bottom:.3rem; white-space:pre-line; line-height:1.6; }
+  .exit-card span{ color:var(--muted); font-size:0.85rem; }
+
+  form.lead{ display:flex; flex-direction:column; gap:1rem; width:100%; text-align:left; }
+  form.lead label{ font-size:0.82rem; color:var(--muted); margin-bottom:.35rem; display:block; }
+  form.lead input, form.lead textarea{
+    width:100%;
+    font-family:var(--font-body);
+    font-size:1rem;
+    color:var(--ivory);
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:.85rem 1rem;
+    resize:none;
+  }
+  form.lead input:focus, form.lead textarea:focus{ outline:2px solid var(--gold); border-color:var(--gold); }
+
+  .compare-box{ display:flex; flex-direction:column; gap:.3rem; align-items:center; }
+  .compare-box .before{ color:var(--muted); }
+  .compare-box .arrow{ color:var(--gold); font-size:1.2rem; }
+  .compare-box .after{ color:var(--gold-glow); font-family:var(--font-display); font-size:1.2rem; }
+
+  .footer-mark{ position:fixed; bottom:calc(env(safe-area-inset-bottom,0) + 10px); left:0; right:0; text-align:center; font-size:0.65rem; color:rgba(167,159,176,0.5); z-index:2; letter-spacing:.08em; }
+
+  .admin-overlay{ position:fixed; inset:0; background:var(--ink); z-index:50; padding:8vh 6vw; overflow-y:auto; }
+  .admin-overlay h2{ text-align:left; }
+  .admin-item{ border-bottom:1px solid var(--line); padding:1rem 0; text-align:left; }
+  .admin-item b{ color:var(--gold-glow); }
+  .admin-item .meta{ color:var(--muted); font-size:0.8rem; }
+</style>
+
+<div id="particles"></div>
+
+<button id="back-btn" class="back-btn" type="button">← 戻る</button>
+
+<div class="app">
+
+  <div class="progress" id="progress" style="display:none;"></div>
+
+  <!-- 0: 幕開け -->
+  <div class="screen active" id="screen-open">
+    <div class="glow-dot"></div>
+    <p class="eyebrow">Special</p>
+    <h1>はじめまして。</h1>
+    <p id="event-line" class="dim"></p>
+    <button class="btn" data-next="landing">ひらく</button>
+  </div>
+
+  <!-- 1: トップ -->
+  <div class="screen" id="screen-landing">
+    <h1>もっと、頑張る前に。</h1>
+    <p>仕事も、遊びも、人生も。
+あなたのパフォーマンスを支えている
+「今のコンディション」を、
+1分だけのぞいてみませんか。</p>
+    <button class="btn" data-next="q1">チェックしてみる</button>
+  </div>
+
+  <!-- Q1〜Q7 -->
+  <div class="screen question" id="screen-q1" data-q="1">
+    <p class="eyebrow">Check 1 / 7</p>
+    <h2>疲れていても、
+予定通り動くことが多い</h2>
+    <div class="chip-row"><div class="chip" data-q="1" data-val="agree">あるある</div><div class="chip" data-q="1" data-val="disagree">そんなでもない</div></div>
+  </div>
+
+  <div class="screen question" id="screen-q2" data-q="2">
+    <p class="eyebrow">Check 2 / 7</p>
+    <h2>仕事が終わっても、
+頭の中では次のことを考えている</h2>
+    <div class="chip-row"><div class="chip" data-q="2" data-val="agree">あるある</div><div class="chip" data-q="2" data-val="disagree">そんなでもない</div></div>
+  </div>
+
+  <div class="screen question" id="screen-q3" data-q="3">
+    <p class="eyebrow">Check 3 / 7</p>
+    <h2>休むより、
+何かしている方が落ち着く</h2>
+    <div class="chip-row"><div class="chip" data-q="3" data-val="agree">あるある</div><div class="chip" data-q="3" data-val="disagree">そんなでもない</div></div>
+  </div>
+
+  <div class="screen question" id="screen-q4" data-q="4">
+    <p class="eyebrow">Check 4 / 7</p>
+    <h2>首や肩、腰に違和感があっても、
+生活には困っていない</h2>
+    <div class="chip-row"><div class="chip" data-q="4" data-val="agree">あるある</div><div class="chip" data-q="4" data-val="disagree">そんなでもない</div></div>
+  </div>
+
+  <div class="screen question" id="screen-q5" data-q="5">
+    <p class="eyebrow">Check 5 / 7</p>
+    <h2>運動や学びなど、
+自分を高めることに
+時間もお金も使っている</h2>
+    <div class="chip-row"><div class="chip" data-q="5" data-val="agree">あるある</div><div class="chip" data-q="5" data-val="disagree">そんなでもない</div></div>
+  </div>
+
+  <div class="screen question" id="screen-q6" data-q="6">
+    <p class="eyebrow">Check 6 / 7</p>
+    <h2>疲れた時、
+自分を戻す具体的な方法を
+持っている</h2>
+    <div class="chip-row"><div class="chip" data-q="6" data-val="agree">あるある</div><div class="chip" data-q="6" data-val="disagree">そんなでもない</div></div>
+  </div>
+
+  <div class="screen question" id="screen-q7" data-q="7">
+    <p class="eyebrow">Check 7 / 7</p>
+    <h2>自分の呼吸の深さを、
+意識することはあまりない</h2>
+    <div class="chip-row"><div class="chip" data-q="7" data-val="agree">あるある</div><div class="chip" data-q="7" data-val="disagree">そんなでもない</div></div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="screen" id="screen-result">
+    <p class="eyebrow">Result</p>
+    <h2>あなたは、
+「前に進む力」がとても強いタイプです。</h2>
+    <div class="card">
+      <p class="type-title" id="result-title"></p>
+      <p id="result-body"></p>
+    </div>
+    <p class="dim">今よりさらに仕事も人生も楽しむために、
+必要なのは、もっと頑張ることではなく、
+自分の状態を、自分でリセットできることかもしれません。</p>
+    <button class="btn" data-next="before-check">30秒だけ体験する</button>
+  </div>
+
+  <!-- 呼吸 前 -->
+  <div class="screen" id="screen-before-check">
+    <p class="eyebrow">Mini Experience</p>
+    <h2>はじめる前の、
+今の感じは？</h2>
+    <div class="chip-row">
+      <div class="chip" data-phase="before" data-value="肩が重い">肩が重い</div>
+      <div class="chip" data-phase="before" data-value="頭がいっぱい">頭がいっぱい</div>
+      <div class="chip" data-phase="before" data-value="まあまあ普通">まあまあ普通</div>
+      <div class="chip" data-phase="before" data-value="スッキリしてる">スッキリしてる</div>
+    </div>
+  </div>
+
+  <!-- 呼吸ガイド -->
+  <div class="screen" id="screen-breathe">
+    <h2>今から、3回だけ、
+ゆっくり呼吸してみてください。</h2>
+    <div class="breath-wrap">
+      <div class="breath-circle" id="breath-circle"></div>
+      <p class="breath-cue" id="breath-cue">はじめる準備ができたら</p>
+    </div>
+    <button class="btn" id="breath-start">はじめる</button>
+  </div>
+
+  <!-- 呼吸 後 -->
+  <div class="screen" id="screen-after-check">
+    <p class="eyebrow">Mini Experience</p>
+    <h2>終わったら、
+今の感じは？</h2>
+    <div class="chip-row">
+      <div class="chip" data-phase="after" data-value="肩が重い">肩が重い</div>
+      <div class="chip" data-phase="after" data-value="頭がいっぱい">頭がいっぱい</div>
+      <div class="chip" data-phase="after" data-value="まあまあ普通">まあまあ普通</div>
+      <div class="chip" data-phase="after" data-value="スッキリしてる">スッキリしてる</div>
+    </div>
+  </div>
+
+  <!-- 比較 + 新しい問い -->
+  <div class="screen" id="screen-compare">
+    <div class="compare-box">
+      <p class="before" id="compare-before"></p>
+      <p class="arrow">↓</p>
+      <p class="after" id="compare-after"></p>
+    </div>
+    <p>今、変わったのは、
+カラダだけでしょうか。
+
+呼吸が変わる。
+力みが抜ける。
+視界や、頭の感覚が変わる。
+
+カラダの状態が変わることで、
+思考や気分まで変わることがあります。</p>
+    <button class="btn" data-next="ai-aside">続きを見る</button>
+  </div>
+
+  <!-- AI一言 -->
+  <div class="screen" id="screen-ai-aside">
+    <p class="eyebrow">ちなみに</p>
+    <p>今、体験してもらったこの仕組み自体も、
+AIを使ってつくっています。
+
+あなたのお仕事も、
+説明するだけでなく、
+「体験できる形」にすることができます。</p>
+    <button class="btn ghost" data-next="about">つづき</button>
+  </div>
+
+  <!-- なお紹介 -->
+  <div class="screen" id="screen-about">
+    <p class="eyebrow">わたしについて</p>
+    <div class="glow-dot"></div>
+    <p>13年間、女性専門整体院の院長として、
+延べ1万人以上のカラダと
+向き合ってきました。
+
+26年間、自分自身のカラダも
+整え続けています。
+
+整体、ヨガ、呼吸、女性のカラダ、意識。
+学んできたことはいろいろありますが、
+伝えていることは、ひとつだけです。
+
+自分のカラダは、
+自分で整えられる。
+
+なお</p>
+    <button class="btn" data-next="exit-choice">もっと知りたい</button>
+  </div>
+
+  <!-- 出口選択 -->
+  <div class="screen" id="screen-exit-choice">
+    <h2>これ、もっと知りたいと思ったら。</h2>
+    <div class="exit-card" data-interest="workshop" data-heading="ワークショップの先行案内、送りますね。">
+      <b>短期間で、
+自分を「戻す力」を
+身につけたい</b>
+      <span>ワークショップの先行案内へ</span>
+    </div>
+    <div class="exit-card" data-interest="app" data-heading="アプリづくりのご相談、聞かせてください。">
+      <b>自分の仕事も、
+こんな風に
+「体験できる形」にしたい</b>
+      <span>アプリづくりの相談へ</span>
+    </div>
+  </div>
+
+  <!-- リードフォーム -->
+  <div class="screen" id="screen-lead-form">
+    <h2 id="lead-heading"></h2>
+    <form class="lead" id="lead-form">
+      <div>
+        <label for="lead-name">お名前</label>
+        <input id="lead-name" required>
+      </div>
+      <div>
+        <label for="lead-contact">LINEのID か、Instagramのアカウント名</label>
+        <input id="lead-contact" required>
+      </div>
+      <div>
+        <label for="lead-message">一言（よければ）</label>
+        <textarea id="lead-message" rows="2"></textarea>
+      </div>
+      <button class="btn" type="submit">送る</button>
+    </form>
+  </div>
+
+  <!-- Thanks -->
+  <div class="screen" id="screen-thanks">
+    <div class="glow-dot"></div>
+    <h2 id="thanks-heading">ありがとうございます。</h2>
+    <p class="dim">落ち着いたタイミングで、
+個別にご連絡しますね。
+
+今日、お話しできて嬉しかったです。</p>
+  </div>
+
+</div>
+
+<div class="footer-mark">condition card ・ made with care</div>
+
+<script type="application/json" id="leads-data">[]</script>
+
+<script>
+(function(){
+  // ---- ここを変えると、どの会のためのアプリか差し替えられます ----
+  const EVENT_NAME = "女性起業家の集まり";
+  document.getElementById('event-line').textContent = EVENT_NAME + "のために、\nこのアプリをつくってきました。";
+
+  const ADMIN_PASSPHRASE = "nao2026";
+
+  const QUESTION_IDS = ['q1','q2','q3','q4','q5','q6','q7'];
+
+  const TYPES = {
+    push: {
+      title: "突き進むタイプ",
+      body: "行動力と決断力で、まわりより先に動いていける人。\n\nその分、「止まる」ことが少し苦手かもしれません。\n前に進む力と同じくらい、自分を元の状態へ戻す力があると、もっと軽やかに、長く動き続けられます。"
+    },
+    think: {
+      title: "頭が休まらないタイプ",
+      body: "頭の回転が速く、常に次の一手を考えられる人。\n\nカラダは休んでいても、頭の中はずっと仕事をしているかもしれません。\n思考をひとつ手放す時間が、次のひらめきにつながります。"
+    },
+    endure: {
+      title: "芯が強いタイプ",
+      body: "多少の違和感があっても、やるべきことをやり切れる人。\n\nその芯の強さが、カラダのサインを後回しにしてしまうことも。\n小さな違和感のうちに気づけると、もっと長く、強く動けます。"
+    },
+    unaware: {
+      title: "感覚を後回しにできるタイプ",
+      body: "自分のカラダにあまり意識を向けなくても、ちゃんと結果を出せてしまう人。\n\n動けてしまうからこそ、自分の状態を「見る」習慣が、まだ少ないだけかもしれません。\n少し意識を向けるだけで、パフォーマンスはまだ伸びます。"
+    }
+  };
+
+  const state = {
+    answers: {},
+    counts: { push:0, think:0, endure:0, unaware:0 },
+    before: '',
+    after: '',
+    interest: 'general'
+  };
+
+  const historyStack = [];
+  const backBtn = document.getElementById('back-btn');
+
+  function goTo(id, opts){
+    opts = opts || {};
+    const current = document.querySelector('.screen.active');
+    if(!opts.isBack && current && current.id !== 'screen-'+id){
+      historyStack.push(current.id.replace('screen-',''));
+    }
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    const el = document.getElementById('screen-'+id);
+    if(!el) return;
+    el.classList.add('active');
+    window.scrollTo(0,0);
+    updateProgress(id);
+    backBtn.classList.toggle('show', id !== 'open' && historyStack.length > 0);
+  }
+
+  function goBack(){
+    const prev = historyStack.pop();
+    if(prev) goTo(prev, { isBack:true });
+  }
+  backBtn.addEventListener('click', goBack);
+
+  function updateProgress(id){
+    const bar = document.getElementById('progress');
+    const idx = QUESTION_IDS.indexOf(id);
+    if(idx === -1){ bar.style.display='none'; return; }
+    bar.style.display='flex';
+    bar.innerHTML = QUESTION_IDS.map((q,i)=>`<span class="${i<=idx?'done':''}"></span>`).join('');
+  }
+
+  // ---- ボタン(data-next)の遷移 ----
+  document.querySelectorAll('[data-next]').forEach(function(btn){
+    btn.addEventListener('click', function(){ goTo(btn.dataset.next); });
+  });
+
+  // ---- 質問チップ ----
+  document.querySelectorAll('.chip[data-q]').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      const q = chip.dataset.q, val = chip.dataset.val;
+      state.answers[q] = val;
+      // 見た目：同じ質問内の選択を反映
+      chip.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+      chip.classList.add('selected');
+
+      setTimeout(function(){
+        const idx = QUESTION_IDS.indexOf('q'+q);
+        if(idx < QUESTION_IDS.length - 1){
+          goTo(QUESTION_IDS[idx+1]);
+        } else {
+          computeResult();
+          goTo('result');
+        }
+      }, 220);
+    });
+  });
+
+  function computeResult(){
+    const a = state.answers;
+    const c = { push:0, think:0, endure:0, unaware:0 };
+    if(a['1']==='agree') c.push++;
+    if(a['2']==='agree') c.think++;
+    if(a['3']==='agree') c.push++;
+    if(a['4']==='agree') c.endure++;
+    if(a['6']==='disagree') c.unaware++;
+    if(a['7']==='agree') c.unaware++;
+    state.counts = c;
+    const order = ['push','think','endure','unaware'];
+    let best = order[0];
+    order.forEach(function(k){ if(c[k] > c[best]) best = k; });
+    const t = TYPES[best];
+    document.getElementById('result-title').textContent = t.title;
+    document.getElementById('result-body').textContent = t.body;
+  }
+
+  // ---- 前後チェック ----
+  document.querySelectorAll('.chip[data-phase]').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      const phase = chip.dataset.phase, value = chip.dataset.value;
+      state[phase] = value;
+      chip.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+      chip.classList.add('selected');
+      setTimeout(function(){
+        if(phase === 'before'){ goTo('breathe'); }
+        else {
+          document.getElementById('compare-before').textContent = 'さっき「' + state.before + '」';
+          document.getElementById('compare-after').textContent  = '今「' + state.after + '」';
+          goTo('compare');
+        }
+      }, 220);
+    });
+  });
+
+  // ---- 呼吸ガイド ----
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function wait(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  document.getElementById('breath-start').addEventListener('click', async function(btn){
+    const startBtn = document.getElementById('breath-start');
+    startBtn.style.display = 'none';
+    const circle = document.getElementById('breath-circle');
+    const cue = document.getElementById('breath-cue');
+    for(let i=0;i<3;i++){
+      cue.textContent = '吸って…';
+      if(!reduceMotion){ circle.style.transition = 'transform 4s ease-in-out'; circle.style.transform = 'scale(1.35)'; }
+      await wait(4000);
+      cue.textContent = '止めて…';
+      await wait(2000);
+      cue.textContent = '吐いて…';
+      if(!reduceMotion){ circle.style.transition = 'transform 4s ease-in-out'; circle.style.transform = 'scale(1)'; }
+      await wait(4000);
+    }
+    cue.textContent = 'よくできました';
+    await wait(900);
+    goTo('after-check');
+    startBtn.style.display = '';
+  });
+
+  // ---- 出口カード ----
+  document.querySelectorAll('.exit-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      state.interest = card.dataset.interest;
+      document.getElementById('lead-heading').textContent = card.dataset.heading;
+      goTo('lead-form');
+    });
+  });
+
+  // ---- リードフォーム送信 ----
+  document.getElementById('lead-form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const name = document.getElementById('lead-name').value.trim();
+    const contact = document.getElementById('lead-contact').value.trim();
+    const message = document.getElementById('lead-message').value.trim();
+    if(!name || !contact) return;
+
+    const entry = {
+      name: name, contact: contact, message: message,
+      interest: state.interest,
+      ts: new Date().toISOString()
+    };
+
+    await submitLead(entry);
+    document.getElementById('thanks-heading').textContent = name + 'さん、ありがとうございます。';
+    goTo('thanks');
+  });
+
+  // ---- リード保存（artifact capability） ----
+  // ライブDOMではなく、読み込み直後の「きれいな状態」を元に再生成して публиш する
+  const PRISTINE_HTML = '<!doctype html>\n' + document.documentElement.outerHTML;
+
+  function buildPublishHtml(leads){
+    return PRISTINE_HTML.replace(
+      /(<script type="application\/json" id="leads-data">)([\s\S]*?)(<\/script>)/,
+      function(m,a,b,c){ return a + JSON.stringify(leads) + c; }
+    );
+  }
+
+  async function submitLead(entry){
+    const dataEl = document.getElementById('leads-data');
+    let leads = [];
+    try{ leads = JSON.parse(dataEl.textContent || '[]'); }catch(e){ leads = []; }
+    leads.push(entry);
+    dataEl.textContent = JSON.stringify(leads);
+    try{
+      const artifact = await claude.use('artifact');
+      if(artifact){
+        await artifact.publish(buildPublishHtml(leads));
+      }
+    }catch(e){ /* 保存できなくても、体験は止めない */ }
+  }
+
+  // ---- 応援者（なおさん）用の一覧ビュー：URLの最後に #leads ----
+  function maybeShowAdmin(){
+    if(location.hash !== '#leads') return;
+    const pass = prompt('合言葉を入力してください');
+    if(pass !== ADMIN_PASSPHRASE){ alert('違います'); history.replaceState(null,'',location.pathname); return; }
+    let leads = [];
+    try{ leads = JSON.parse(document.getElementById('leads-data').textContent || '[]'); }catch(e){}
+    const overlay = document.createElement('div');
+    overlay.className = 'admin-overlay';
+    overlay.innerHTML = '<h2>反応があった方一覧（' + leads.length + '件）</h2>' +
+      (leads.length === 0 ? '<p class="dim">まだありません。</p>' :
+        leads.slice().reverse().map(function(l){
+          return '<div class="admin-item"><b>' + escapeHtml(l.name) + '</b>（' + (l.interest==='workshop'?'ワークショップ興味':l.interest==='app'?'アプリ相談':'—') + '）<br>連絡先：' + escapeHtml(l.contact) + (l.message? '<br>ひとこと：'+escapeHtml(l.message):'') + '<div class="meta">' + escapeHtml(l.ts||'') + '</div></div>';
+        }).join('')) +
+      '<button class="btn ghost" style="margin-top:1.5rem" onclick="location.hash=\'\'; location.reload();">閉じる</button>';
+    document.body.appendChild(overlay);
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  maybeShowAdmin();
+
+  // ---- 背景の金の光パーティクル ----
+  (function(){
+    const canvas = document.createElement('canvas');
+    document.getElementById('particles').appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    let w,h,dots=[];
+    function size(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    function init(){
+      size();
+      const n = Math.min(40, Math.floor(w*h/26000));
+      dots = Array.from({length:n}, function(){
+        return { x:Math.random()*w, y:Math.random()*h, r:Math.random()*1.6+0.4, s:Math.random()*0.25+0.05, o:Math.random()*0.5+0.15 };
+      });
+    }
+    function draw(){
+      ctx.clearRect(0,0,w,h);
+      dots.forEach(function(d){
+        ctx.beginPath();
+        ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+        ctx.fillStyle = 'rgba(243,205,133,' + d.o + ')';
+        ctx.fill();
+        if(!reduceMotion){ d.y -= d.s; if(d.y < -5) d.y = h+5; }
+      });
+      requestAnimationFrame(draw);
+    }
+    init();
+    window.addEventListener('resize', init);
+    draw();
+  })();
+
+})();
+</script>
