@@ -286,11 +286,6 @@
 
   .footer-mark{ position:fixed; bottom:calc(env(safe-area-inset-bottom,0) + 10px); left:0; right:0; text-align:center; font-size:0.65rem; color:rgba(167,159,176,0.5); z-index:2; letter-spacing:.08em; }
 
-  .admin-overlay{ position:fixed; inset:0; background:var(--ink); z-index:50; padding:8vh 6vw; overflow-y:auto; }
-  .admin-overlay h2{ text-align:left; }
-  .admin-item{ border-bottom:1px solid var(--line); padding:1rem 0; text-align:left; }
-  .admin-item b{ color:var(--gold-glow); }
-  .admin-item .meta{ color:var(--muted); font-size:0.8rem; }
 </style>
 
 <div id="particles"></div>
@@ -494,49 +489,34 @@
 
   <!-- 出口選択 -->
   <div class="screen" id="screen-exit-choice">
-    <h2>これ、もっと
-知りたいと思ったら。</h2>
-    <div class="exit-card" data-interest="workshop" data-heading="ワークショップの先行案内、送りますね。">
+    <h2>もう少し、
+先を知りたくなったら。</h2>
+    <p class="dim">公式LINEに合言葉を送ると、
+詳しいご案内が自動で届きます。</p>
+    <div class="exit-card" data-keyword="戻す力" data-line-href="https://lin.ee/zMSBmw7">
       <b>短期間で、
 自分を「戻す力」を
 身につけたい</b>
-      <span>ワークショップの先行案内へ</span>
+      <span>公式LINEで「戻す力」と送る</span>
     </div>
-    <div class="exit-card" data-interest="app" data-heading="アプリづくりのご相談、聞かせてください。">
-      <b>自分の仕事にも、
-こんな体験を
-取り入れたい</b>
-      <span>アプリづくりの相談へ</span>
+    <div class="exit-card" data-keyword="アプリ" data-line-href="https://lin.ee/zMSBmw7">
+      <b>この体験を、
+自分の仕事にも
+取り入れてみたい</b>
+      <span>公式LINEで「アプリ」と送る</span>
     </div>
-  </div>
-
-  <!-- リードフォーム -->
-  <div class="screen" id="screen-lead-form">
-    <h2 id="lead-heading"></h2>
-    <form class="lead" id="lead-form">
-      <div>
-        <label for="lead-name">お名前</label>
-        <input id="lead-name" required>
-      </div>
-      <div>
-        <label for="lead-contact">LINEのID か、Instagramのアカウント名</label>
-        <input id="lead-contact" required>
-      </div>
-      <div>
-        <label for="lead-message">一言（よければ）</label>
-        <textarea id="lead-message" rows="2"></textarea>
-      </div>
-      <button class="btn" type="submit">送る</button>
-    </form>
+    <p class="dim" style="font-size:0.78rem;">気になる方だけ、続きをどうぞ。</p>
   </div>
 
   <!-- Thanks -->
   <div class="screen" id="screen-thanks">
     <div class="glow-dot"></div>
-    <h2 id="thanks-heading">ありがとうございます。</h2>
-    <div class="card" id="thanks-card" style="text-align:left;"></div>
-    <p class="dim">この画面を、なおさんに見せてくださいね。
-それが一番の連絡先になります。</p>
+    <h2>ありがとうございます。</h2>
+    <p class="dim">合言葉、コピーしておきました。
+LINEを開いたら、貼りつけて送ってください。
+
+そこから、詳しいご案内が
+自動で届きます。</p>
     <a class="btn ghost" href="https://www.instagram.com/nao7_begrace" target="_blank" rel="noopener">Instagram</a>
   </div>
 
@@ -544,12 +524,8 @@
 
 <div class="footer-mark">condition card ・ made with care</div>
 
-<script type="application/json" id="leads-data">[]</script>
-
 <script>
 (function(){
-
-  const ADMIN_PASSPHRASE = "nao2026";
 
   const QUESTION_IDS = ['q1','q2','q3','q4','q5','q6','q7','q8','q9'];
 
@@ -742,83 +718,15 @@
     goTo('after-check');
   });
 
-  // ---- 出口カード ----
+  // ---- 出口カード：合言葉をコピーしてから、公式LINEを開く ----
   document.querySelectorAll('.exit-card').forEach(function(card){
-    card.addEventListener('click', function(){
-      state.interest = card.dataset.interest;
-      document.getElementById('lead-heading').textContent = card.dataset.heading;
-      goTo('lead-form');
+    card.addEventListener('click', async function(){
+      const keyword = card.dataset.keyword;
+      try{ await navigator.clipboard.writeText(keyword); }catch(e){ /* コピーできなくても、体験は止めない */ }
+      window.open(card.dataset.lineHref, '_blank', 'noopener');
+      goTo('thanks');
     });
   });
-
-  // ---- リードフォーム送信 ----
-  document.getElementById('lead-form').addEventListener('submit', async function(e){
-    e.preventDefault();
-    const name = document.getElementById('lead-name').value.trim();
-    const contact = document.getElementById('lead-contact').value.trim();
-    const message = document.getElementById('lead-message').value.trim();
-    if(!name || !contact) return;
-
-    const entry = {
-      name: name, contact: contact, message: message,
-      interest: state.interest,
-      ts: new Date().toISOString()
-    };
-
-    await submitLead(entry);
-    document.getElementById('thanks-heading').textContent = name + 'さん、ありがとうございます。';
-    document.getElementById('thanks-card').innerHTML =
-      '<b style="color:var(--gold-glow); font-family:var(--font-display);">' + escapeHtml(name) + '</b><br>' +
-      escapeHtml(contact) +
-      (message ? '<br><span class="dim">' + escapeHtml(message) + '</span>' : '') +
-      '<br><span class="dim">' + (state.interest==='workshop' ? 'ワークショップに興味あり' : state.interest==='app' ? 'アプリ制作の相談希望' : '') + '</span>';
-    goTo('thanks');
-  });
-
-  // ---- リード保存（artifact capability） ----
-  // ライブDOMではなく、読み込み直後の「きれいな状態」を元に再生成して публиш する
-  const PRISTINE_HTML = '<!doctype html>\n' + document.documentElement.outerHTML;
-
-  function buildPublishHtml(leads){
-    return PRISTINE_HTML.replace(
-      /(<script type="application\/json" id="leads-data">)([\s\S]*?)(<\/script>)/,
-      function(m,a,b,c){ return a + JSON.stringify(leads) + c; }
-    );
-  }
-
-  async function submitLead(entry){
-    const dataEl = document.getElementById('leads-data');
-    let leads = [];
-    try{ leads = JSON.parse(dataEl.textContent || '[]'); }catch(e){ leads = []; }
-    leads.push(entry);
-    dataEl.textContent = JSON.stringify(leads);
-    try{
-      const artifact = await claude.use('artifact');
-      if(artifact){
-        await artifact.publish(buildPublishHtml(leads));
-      }
-    }catch(e){ /* 保存できなくても、体験は止めない */ }
-  }
-
-  // ---- 応援者（なおさん）用の一覧ビュー：URLの最後に #leads ----
-  function maybeShowAdmin(){
-    if(location.hash !== '#leads') return;
-    const pass = prompt('合言葉を入力してください');
-    if(pass !== ADMIN_PASSPHRASE){ alert('違います'); history.replaceState(null,'',location.pathname); return; }
-    let leads = [];
-    try{ leads = JSON.parse(document.getElementById('leads-data').textContent || '[]'); }catch(e){}
-    const overlay = document.createElement('div');
-    overlay.className = 'admin-overlay';
-    overlay.innerHTML = '<h2>反応があった方一覧（' + leads.length + '件）</h2>' +
-      (leads.length === 0 ? '<p class="dim">まだありません。</p>' :
-        leads.slice().reverse().map(function(l){
-          return '<div class="admin-item"><b>' + escapeHtml(l.name) + '</b>（' + (l.interest==='workshop'?'ワークショップ興味':l.interest==='app'?'アプリ相談':'—') + '）<br>連絡先：' + escapeHtml(l.contact) + (l.message? '<br>ひとこと：'+escapeHtml(l.message):'') + '<div class="meta">' + escapeHtml(l.ts||'') + '</div></div>';
-        }).join('')) +
-      '<button class="btn ghost" style="margin-top:1.5rem" onclick="location.hash=\'\'; location.reload();">閉じる</button>';
-    document.body.appendChild(overlay);
-  }
-  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  maybeShowAdmin();
 
   // ---- 背景の金の光パーティクル ----
   (function(){
