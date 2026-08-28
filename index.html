@@ -461,10 +461,9 @@ AIを使ってつくっています。
   <div class="screen" id="screen-thanks">
     <div class="glow-dot"></div>
     <h2 id="thanks-heading">ありがとうございます。</h2>
-    <p class="dim">落ち着いたタイミングで、
-個別にご連絡しますね。
-
-今日、お話しできて嬉しかったです。</p>
+    <div class="card" id="thanks-card" style="text-align:left;"></div>
+    <p class="dim">この画面を、なおさんに見せてくださいね。
+それが一番の連絡先になります。</p>
   </div>
 
 </div>
@@ -654,6 +653,11 @@ AIを使ってつくっています。
 
     await submitLead(entry);
     document.getElementById('thanks-heading').textContent = name + 'さん、ありがとうございます。';
+    document.getElementById('thanks-card').innerHTML =
+      '<b style="color:var(--gold-glow); font-family:var(--font-display);">' + escapeHtml(name) + '</b><br>' +
+      escapeHtml(contact) +
+      (message ? '<br><span class="dim">' + escapeHtml(message) + '</span>' : '') +
+      '<br><span class="dim">' + (state.interest==='workshop' ? 'ワークショップに興味あり' : state.interest==='app' ? 'アプリ制作の相談希望' : '') + '</span>';
     goTo('thanks');
   });
 
