@@ -340,11 +340,8 @@
   <!-- 結果 -->
   <div class="screen" id="screen-result">
     <p class="eyebrow">Result</p>
-    <h2>あなたは、
-「前に進む力」が
-とても強いタイプです。</h2>
+    <h2 class="type-title" id="result-headline"></h2>
     <div class="card">
-      <p class="type-title" id="result-title"></p>
       <p id="result-body"></p>
     </div>
     <p class="dim">今よりさらに仕事も人生も楽しむために、
@@ -518,7 +515,7 @@ AIを使ってつくっています。
       body: "多少の違和感があっても、やるべきことをやり切れる人。\n\nその芯の強さが、カラダのサインを後回しにしてしまうことも。\n小さな違和感のうちに気づけると、もっと長く、強く動けます。"
     },
     unaware: {
-      title: "感覚を後回しにできるタイプ",
+      title: "気づきにくいタイプ",
       body: "自分のカラダにあまり意識を向けなくても、ちゃんと結果を出せてしまう人。\n\n動けてしまうからこそ、自分の状態を「見る」習慣が、まだ少ないだけかもしれません。\n少し意識を向けるだけで、パフォーマンスはまだ伸びます。"
     }
   };
@@ -608,7 +605,7 @@ AIを使ってつくっています。
     let best = order[0];
     order.forEach(function(k){ if(c[k] > c[best]) best = k; });
     const t = TYPES[best];
-    document.getElementById('result-title').textContent = t.title;
+    document.getElementById('result-headline').textContent = 'あなたは、\n「' + t.title + '」\nです。';
     document.getElementById('result-body').textContent = t.body;
   }
 
