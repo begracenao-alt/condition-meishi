@@ -632,15 +632,21 @@ AIを使ってつくっています。
     startBtn.style.display = 'none';
     const circle = document.getElementById('breath-circle');
     const cue = document.getElementById('breath-cue');
+    // 4-7-8呼吸法（吸う4秒・止める7秒・吐く8秒）。吐く息を一番長く。
+    async function phase(label, seconds, scaleTo){
+      if(!reduceMotion && scaleTo !== null){
+        circle.style.transition = 'transform ' + seconds + 's ease-in-out';
+        circle.style.transform = 'scale(' + scaleTo + ')';
+      }
+      for(let s=seconds; s>=1; s--){
+        cue.textContent = label + s;
+        await wait(1000);
+      }
+    }
     for(let i=0;i<3;i++){
-      cue.textContent = '吸って…';
-      if(!reduceMotion){ circle.style.transition = 'transform 4s ease-in-out'; circle.style.transform = 'scale(1.35)'; }
-      await wait(4000);
-      cue.textContent = '止めて…';
-      await wait(2000);
-      cue.textContent = '吐いて…';
-      if(!reduceMotion){ circle.style.transition = 'transform 4s ease-in-out'; circle.style.transform = 'scale(1)'; }
-      await wait(4000);
+      await phase('吸って… ', 4, 1.35);
+      await phase('止めて… ', 7, null);
+      await phase('吐いて… ', 8, 1);
     }
     cue.textContent = 'よくできました';
     await wait(900);
