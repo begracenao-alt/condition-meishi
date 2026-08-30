@@ -577,6 +577,7 @@ Be Grace Method 主宰
     window.scrollTo(0,0);
     updateProgress(id);
     backBtn.classList.toggle('show', id !== 'open' && historyStack.length > 0);
+    document.getElementById('breath-skip').style.display = (id === 'breathe') ? 'inline-block' : 'none';
   }
 
   function goBack(){
