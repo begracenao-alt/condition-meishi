@@ -638,10 +638,13 @@
           document.getElementById('compare-after').textContent  = '今「' + state.after + '」';
           const COMPARE_TEXT_GOOD = '今、変わったのは、\nカラダそのものでしょうか。\n\n深く呼吸したことで、\n力みがゆるみ、\n\nカラダが、\n軽く感じられたのかもしれません。\n\nその感覚も、\nあなたのカラダが伝えている\nひとつのサイン。\n\nカラダの声に気づくことが、\n整える最初の一歩です。';
           const COMPARE_TEXT_AWARE = '今、変わったのは、\nカラダそのものでしょうか。\n\nもしかすると、\n深く呼吸したことで、\n\n今まで気づかなかった\nカラダの感覚に\n気づいただけかもしれません。\n\n呼吸が少し深くなると、\n力みがゆるみ、\nカラダの感覚を\n感じやすくなります。\n\nそれも、\n悪いことではありません。\n\nそれは今、\nあなたのカラダが伝えている\nひとつのサイン。\n\nカラダの声に気づくことが、\n整える最初の一歩です。';
+          const COMPARE_TEXT_STAYED_GOOD = '今も、\nスッキリしたまま。\n\nもともと調子のいい方は、\n呼吸を変えても、\nその心地よさが続きます。\n\nいい状態を保てていることも、\n立派なカラダのサインです。\n\nその感覚を、\nこれからも大事にしてください。';
           // 前後を比べて、実際に良くなっていた場合だけ前向きな文章にする
           const FEEL_SCORE = { '頭がいっぱい': 0, '肩が重い': 0, 'まあまあ普通': 1, 'スッキリしてる': 2 };
           const improved = FEEL_SCORE[state.after] > FEEL_SCORE[state.before];
-          document.getElementById('compare-body').textContent = improved ? COMPARE_TEXT_GOOD : COMPARE_TEXT_AWARE;
+          const stayedGood = state.before === 'スッキリしてる' && state.after === 'スッキリしてる';
+          document.getElementById('compare-body').textContent =
+            stayedGood ? COMPARE_TEXT_STAYED_GOOD : (improved ? COMPARE_TEXT_GOOD : COMPARE_TEXT_AWARE);
           goTo('compare');
         }
       }, 220);
