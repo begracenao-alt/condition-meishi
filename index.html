@@ -53,7 +53,7 @@
     justify-content:center;
     align-items:center;
     min-height:100vh;
-    padding:9vh 7vw 8vh;
+    padding:9vh 7vw calc(8vh + 34px);
     text-align:center;
     gap:1.6rem;
   }
@@ -256,17 +256,26 @@
     text-underline-offset:3px;
   }
 
-  .footer-mark{ position:fixed; bottom:calc(env(safe-area-inset-bottom,0) + 10px); left:0; right:0; text-align:center; font-size:0.65rem; color:rgba(167,159,176,0.5); z-index:2; letter-spacing:.08em; }
-  .brand-tag{
+  .app-footer{
     position:fixed;
-    bottom:calc(env(safe-area-inset-bottom,0) + 26px);
+    bottom:env(safe-area-inset-bottom,0);
     left:0; right:0;
-    text-align:center;
-    font-family:var(--font-round);
-    font-size:0.68rem;
-    color:var(--gold);
     z-index:2;
+    text-align:center;
+    line-height:1.5;
+    padding:4px 0 6px;
+    pointer-events:none;
+  }
+  .brand-tag{
+    font-family:var(--font-round);
+    font-size:0.62rem;
+    color:var(--gold);
     letter-spacing:.06em;
+  }
+  .footer-mark{
+    font-size:0.58rem;
+    color:rgba(167,159,176,0.5);
+    letter-spacing:.04em;
   }
 
 </style>
@@ -495,8 +504,10 @@
 
 </div>
 
-<div class="brand-tag">BODY × APP ｜ セルフ整体・オリジナルアプリ制作</div>
-<div class="footer-mark">内容の無断転載・複製はご遠慮ください ／ © Be Grace</div>
+<div class="app-footer">
+  <div class="brand-tag">BODY × APP</div>
+  <div class="footer-mark">無断転載・複製はご遠慮ください ／ © Be Grace</div>
+</div>
 
 <script>
 (function(){
