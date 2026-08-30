@@ -6,7 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<title>コンディション名刺 QR</title>
+<title>Be Grace なお</title>
+<meta name="apple-mobile-web-app-title" content="Be Grace なお">
 <link rel="apple-touch-icon" href="qr-icon.png">
 <style>
   html, body{
@@ -58,7 +59,7 @@
     const btn = this;
     if(navigator.share){
       try{
-        await navigator.share({ title: 'コンディション名刺', url: APP_URL });
+        await navigator.share({ title: 'Be Grace なお', url: APP_URL });
       }catch(e){ /* 共有をやめても、体験は止めない */ }
     } else {
       try{
